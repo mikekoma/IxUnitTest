@@ -1,0 +1,36 @@
+
+# ---- application ----
+*.xls
+*.log
+*.txt
+*.xml
+
+# ---- VC ----
+*.user
+*.ncb
+*.suo
+*.pdb
+
+# ---- HEW ----
+*.ARF
+*.BKP
+*.BKS
+*.BKW
+*.pgs
+*.obj
+
+# ---- Delphi ----
+*.dproj.local
+*.identcache
+*.dcu
+__history
+
+# ---- WinAVR ----
+default/*.o
+default/dep
+
+# --- Git ----
+.gitignore
+
+# --- Windows ----
+Thums.db
