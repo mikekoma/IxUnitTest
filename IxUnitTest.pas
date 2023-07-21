@@ -1,6 +1,9 @@
 ﻿{
   IxUnitTest
 
+  ■2023-07-12 Ver1.03
+  TStrings追加
+
   ■2023-07-11 Ver1.02
   クラス名変更 TIxMinUnit -> TIxUnitTest
   Console削除
@@ -95,6 +98,7 @@ function assertEquals(msg: string; exp, act: UInt32; hex: boolean = false): bool
 function assertEquals(msg: string; exp, act: UInt16; hex: boolean = false): boolean; overload; // Word
 function assertEquals(msg: string; exp, act: Int32; hex: boolean = false): boolean; overload; // integer(32bit)
 function assertEquals(msg: string; exp, act: array of Byte): boolean; overload;
+function assertEquals(msg: string; exp, act: TStrings): boolean; overload;
 
 type
   TIxUnitTestModule = class(TObject)
@@ -424,6 +428,39 @@ begin
 {$ENDIF}
     Result := false;
   end;
+end;
+
+function assertEquals(msg: string; exp, act: TStrings): boolean;
+var
+  strexp: string;
+  stract: string;
+begin
+  if exp.Count <> act.Count then
+  begin
+    inc(TestSuit.ErrorCount);
+    if msg <> '' then
+      TestSuit.LogMsg(msg);
+
+    TestSuit.LogMsg(STR_EXP + '(TStrings.Count) = ' + IntToStr(exp.Count));
+    TestSuit.LogMsg(STR_ACT + '(TStrings.Count) = ' + IntToStr(act.Count));
+    Exit;
+  end;
+
+  for var i := 0 to exp.Count - 1 do
+  begin
+    if exp[i] <> act[i] then
+    begin
+      inc(TestSuit.ErrorCount);
+      if msg <> '' then
+        TestSuit.LogMsg(msg);
+
+      TestSuit.LogMsg(STR_EXP + '(TStrings[' + i.ToString + ']) = ' + exp[i]);
+      TestSuit.LogMsg(STR_ACT + '(TStrings[' + i.ToString + ']) = ' + act[i]);
+
+      Exit;
+    end;
+  end;
+
 end;
 
 initialization
