@@ -360,7 +360,6 @@ begin
   inc(TestSuit.ErrorCount);
   if msg <> '' then
     TestSuit.LogMsg(msg);
-  Result := false;
 
   len_limit := false;
   if len_exp > 64 then
@@ -392,6 +391,8 @@ begin
   TestSuit.LogMsg(STR_ARR_EXP + exp_str);
   TestSuit.LogMsg(STR_ARR_DIF + dif_str);
   TestSuit.LogMsg(STR_ARR_ACT + act_str);
+
+  Result := false;
 end;
 
 function assertEquals(msg: string; exp, act: Int32; hex: boolean = false): boolean;
@@ -431,9 +432,6 @@ begin
 end;
 
 function assertEquals(msg: string; exp, act: TStrings): boolean;
-var
-  strexp: string;
-  stract: string;
 begin
   if exp.Count <> act.Count then
   begin
@@ -443,6 +441,8 @@ begin
 
     TestSuit.LogMsg(STR_EXP + '(TStrings.Count) = ' + IntToStr(exp.Count));
     TestSuit.LogMsg(STR_ACT + '(TStrings.Count) = ' + IntToStr(act.Count));
+
+    Result := false;
     Exit;
   end;
 
@@ -457,10 +457,12 @@ begin
       TestSuit.LogMsg(STR_EXP + '(TStrings[' + i.ToString + ']) = ' + exp[i]);
       TestSuit.LogMsg(STR_ACT + '(TStrings[' + i.ToString + ']) = ' + act[i]);
 
+      Result := false;
       Exit;
     end;
   end;
 
+  Result := True;
 end;
 
 initialization

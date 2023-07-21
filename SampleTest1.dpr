@@ -4,15 +4,16 @@
 {$R *.res}
 
 uses
-  System.SysUtils, IxUnitTest;
+  System.Classes, System.SysUtils, IxUnitTest;
 
 var
   exparr: array of Byte;
   actarr: array of Byte;
+  expstringlist: TStringList;
+  actstringlist: TStringList;
 
 begin
   try
-
     SetLength(exparr, 8);
     SetLength(actarr, 8);
 
@@ -21,6 +22,13 @@ begin
       exparr[i] := i;
       actarr[i] := i;
     end;
+
+    expstringlist := TStringList.Create;
+    actstringlist := TStringList.Create;
+
+    expstringlist.Add('abc');
+    expstringlist.Add('def');
+    actstringlist.Assign(expstringlist);
 
 {$IF true}
     System.Writeln('■■■ Test Start ■■■ 全テスト成功');
@@ -32,6 +40,7 @@ begin
     assertEquals('Test1-5', 'abc', 'abc');
     assertEquals('Test1-6', true, true);
     assertEquals('Test1-7', exparr, actarr);
+    assertEquals('Test1-8', expstringlist, actstringlist);
     TestSuit.Close;
     System.Writeln(TestSuit.Log.Text);
 {$ENDIF}
@@ -60,6 +69,14 @@ begin
     SetLength(actarr, 8);
     actarr[3] := 8;
     assertEquals('Test2-5-1', exparr, actarr);
+    actstringlist.Add('ghi');
+    assertEquals('Test2-6-1', expstringlist, actstringlist);
+    actstringlist.Delete(2);
+    expstringlist.Add('ghi');
+    assertEquals('Test2-6-2', expstringlist, actstringlist);
+    expstringlist.Delete(2);
+    actstringlist.Strings[1] := 'dxf';
+    assertEquals('Test2-6-3', expstringlist, actstringlist);
     TestSuit.Close;
     System.Writeln(TestSuit.Log.Text);
 {$ENDIF}
