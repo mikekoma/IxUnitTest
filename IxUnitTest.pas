@@ -3,6 +3,7 @@
 
   ■2023-08-06 Ver1.04
   UInt64追加
+  TDateTime追加
 
   ■2023-07-12 Ver1.03
   TStrings追加
@@ -101,6 +102,7 @@ function assertEquals(msg: string; exp, act: UInt32; hex: boolean = false): bool
 function assertEquals(msg: string; exp, act: UInt16; hex: boolean = false): boolean; overload; // Word
 function assertEquals(msg: string; exp, act: Int32; hex: boolean = false): boolean; overload; // integer(32bit)
 function assertEquals(msg: string; exp, act: UInt64; hex: boolean = false): boolean; overload; // unsigned integer(64it)
+function assertEquals(msg: string; exp, act: TDateTime): boolean; overload;
 function assertEquals(msg: string; exp, act: array of Byte): boolean; overload;
 function assertEquals(msg: string; exp, act: TStrings): boolean; overload;
 
@@ -464,6 +466,34 @@ begin
 
     TestSuit.LogMsg(STR_EXP + '(UInt64) = ' + strexp);
     TestSuit.LogMsg(STR_ACT + '(UInt64) = ' + stract);
+{$IFDEF IXUNITTEST_ENABLE_ASSERT}
+    Assert(false);
+{$ENDIF}
+    Result := false;
+  end;
+end;
+
+function assertEquals(msg: string; exp, act: TDateTime): boolean;
+var
+  strexp: string;
+  stract: string;
+begin
+  if exp = act then
+  begin
+    inc(TestSuit.SuccessCount);
+    Result := True;
+  end
+  else
+  begin
+    inc(TestSuit.ErrorCount);
+    if msg <> '' then
+      TestSuit.LogMsg(msg);
+
+    DateTimeToString(strexp, 'yyyy-mm-dd hh:nn:ss zzz', exp);
+    DateTimeToString(stract, 'yyyy-mm-dd hh:nn:ss zzz', act);
+
+    TestSuit.LogMsg(STR_EXP + '(TDateTime) = ' + strexp);
+    TestSuit.LogMsg(STR_ACT + '(TDateTime) = ' + stract);
 {$IFDEF IXUNITTEST_ENABLE_ASSERT}
     Assert(false);
 {$ENDIF}
