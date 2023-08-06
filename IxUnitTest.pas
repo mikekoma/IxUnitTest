@@ -1,6 +1,9 @@
 ﻿{
   IxUnitTest
 
+  ■2023-08-06 Ver1.04
+  UInt64追加
+
   ■2023-07-12 Ver1.03
   TStrings追加
 
@@ -97,6 +100,7 @@ function assertEquals(msg: string; exp, act: Double; err_range: Double = 0): boo
 function assertEquals(msg: string; exp, act: UInt32; hex: boolean = false): boolean; overload; // Longword
 function assertEquals(msg: string; exp, act: UInt16; hex: boolean = false): boolean; overload; // Word
 function assertEquals(msg: string; exp, act: Int32; hex: boolean = false): boolean; overload; // integer(32bit)
+function assertEquals(msg: string; exp, act: UInt64; hex: boolean = false): boolean; overload; // unsigned integer(64it)
 function assertEquals(msg: string; exp, act: array of Byte): boolean; overload;
 function assertEquals(msg: string; exp, act: TStrings): boolean; overload;
 
@@ -424,6 +428,42 @@ begin
 
     TestSuit.LogMsg(STR_EXP + '(Int32) = ' + strexp);
     TestSuit.LogMsg(STR_ACT + '(Int32) = ' + stract);
+{$IFDEF IXUNITTEST_ENABLE_ASSERT}
+    Assert(false);
+{$ENDIF}
+    Result := false;
+  end;
+end;
+
+function assertEquals(msg: string; exp, act: UInt64; hex: boolean = false): boolean;
+var
+  strexp: string;
+  stract: string;
+begin
+  if exp = act then
+  begin
+    inc(TestSuit.SuccessCount);
+    Result := True;
+  end
+  else
+  begin
+    inc(TestSuit.ErrorCount);
+    if msg <> '' then
+      TestSuit.LogMsg(msg);
+
+    if hex then
+    begin
+      strexp := '$' + IntToHex(exp, 8);
+      stract := '$' + IntToHex(act, 8);
+    end
+    else
+    begin
+      strexp := IntToStr(exp);
+      stract := IntToStr(act);
+    end;
+
+    TestSuit.LogMsg(STR_EXP + '(UInt64) = ' + strexp);
+    TestSuit.LogMsg(STR_ACT + '(UInt64) = ' + stract);
 {$IFDEF IXUNITTEST_ENABLE_ASSERT}
     Assert(false);
 {$ENDIF}
