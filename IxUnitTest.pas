@@ -620,18 +620,19 @@ begin
   begin
     if exp[i] <> act[i] then
     begin
-      inc(TestSuit.ErrorCount);
       if msg <> '' then
         TestSuit.LogMsg(msg);
 
       TestSuit.LogMsg(STR_EXP + '(TStrings[' + i.ToString + ']) = ' + exp[i]);
       TestSuit.LogMsg(STR_ACT + '(TStrings[' + i.ToString + ']) = ' + act[i]);
 
+      inc(TestSuit.ErrorCount);
       Result := false;
       Exit;
     end;
   end;
 
+  inc(TestSuit.SuccessCount);
   Result := True;
 end;
 
