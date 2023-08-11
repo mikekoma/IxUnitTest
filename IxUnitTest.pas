@@ -1,6 +1,9 @@
 ﻿{
   IxUnitTest
 
+  ■2023-08-11 Ver1.05
+  バイナリ比較を追加
+
   ■2023-08-06 Ver1.04
   UInt64追加
   TDateTime追加
@@ -103,8 +106,8 @@ type
 function assertEquals(msg: string; exp, act: boolean): boolean; overload;
 function assertEquals(msg: string; exp, act: string): boolean; overload;
 function assertEquals(msg: string; exp, act: Double; err_range: Double = 0): boolean; overload;
-function assertEquals(msg: string; exp, act: UInt32; utype: TIxUnitType = utDEC): boolean; overload; // Longword
 function assertEquals(msg: string; exp, act: UInt16; utype: TIxUnitType = utDEC): boolean; overload; // Word
+function assertEquals(msg: string; exp, act: UInt32; utype: TIxUnitType = utDEC): boolean; overload; // Longword
 function assertEquals(msg: string; exp, act: Int32; utype: TIxUnitType = utDEC): boolean; overload; // integer(32bit)
 function assertEquals(msg: string; exp, act: UInt64; utype: TIxUnitType = utDEC): boolean; overload; // unsigned integer(64it)
 function assertEquals(msg: string; exp, act: TDateTime): boolean; overload;
@@ -391,89 +394,6 @@ begin
   end;
 end;
 
-{
-  バイト配列の比較
-  テスト失敗時、最大64バイトまでは比較結果を表示する
-}
-function assertEquals(msg: string; exp, act: array of Byte): boolean;
-var
-  len_exp, len_act: integer;
-  err_count: integer;
-  exp_str, act_str, dif_str: string;
-  len_limit: boolean;
-begin
-  len_exp := Length(exp);
-  len_act := Length(act);
-  if len_exp <> len_act then
-  begin
-    // 長さが違う
-    inc(TestSuit.ErrorCount);
-    if msg <> '' then
-      TestSuit.LogMsg(msg);
-
-    TestSuit.LogMsg(STR_LEN_EXP + IntToStr(len_exp));
-    TestSuit.LogMsg(STR_LEN_ACT + IntToStr(len_act));
-    Result := false;
-    Exit;
-  end;
-
-  err_count := 0;
-  for var i := 0 to len_exp - 1 do
-  begin
-    if exp[i] <> act[i] then
-    begin
-      inc(err_count);
-      break;
-    end;
-  end;
-
-  if err_count = 0 then
-  begin
-    // 成功
-    inc(TestSuit.SuccessCount);
-    Result := True;
-    Exit;
-  end;
-
-  // ここから相違あり(テスト失敗)
-  inc(TestSuit.ErrorCount);
-  if msg <> '' then
-    TestSuit.LogMsg(msg);
-
-  len_limit := false;
-  if len_exp > 64 then
-  begin
-    len_exp := 64;
-    len_limit := True;
-  end;
-
-  exp_str := '';
-  act_str := '';
-  dif_str := '';
-  for var i := 0 to len_exp - 1 do
-  begin
-    exp_str := exp_str + IntToHex(exp[i], 2) + ' ';
-    act_str := act_str + IntToHex(act[i], 2) + ' ';
-    if exp[i] <> act[i] then
-      dif_str := dif_str + '|| '
-    else
-      dif_str := dif_str + '   ';
-  end;
-
-  if len_limit then
-  begin
-    exp_str := exp_str + '...';
-    act_str := act_str + '...';
-    dif_str := dif_str + '...';
-  end;
-
-  TestSuit.LogMsg(STR_ARR_EXP + exp_str);
-  TestSuit.LogMsg(STR_ARR_DIF + dif_str);
-  TestSuit.LogMsg(STR_ARR_ACT + act_str);
-
-  Result := false;
-end;
-
 function assertEquals(msg: string; exp, act: Int32; utype: TIxUnitType = utDEC): boolean;
 var
   strexp: string;
@@ -568,6 +488,89 @@ begin
 {$ENDIF}
     Result := false;
   end;
+end;
+
+{
+  バイト配列の比較
+  テスト失敗時、最大64バイトまでは比較結果を表示する
+}
+function assertEquals(msg: string; exp, act: array of Byte): boolean;
+var
+  len_exp, len_act: integer;
+  err_count: integer;
+  exp_str, act_str, dif_str: string;
+  len_limit: boolean;
+begin
+  len_exp := Length(exp);
+  len_act := Length(act);
+  if len_exp <> len_act then
+  begin
+    // 長さが違う
+    inc(TestSuit.ErrorCount);
+    if msg <> '' then
+      TestSuit.LogMsg(msg);
+
+    TestSuit.LogMsg(STR_LEN_EXP + IntToStr(len_exp));
+    TestSuit.LogMsg(STR_LEN_ACT + IntToStr(len_act));
+    Result := false;
+    Exit;
+  end;
+
+  err_count := 0;
+  for var i := 0 to len_exp - 1 do
+  begin
+    if exp[i] <> act[i] then
+    begin
+      inc(err_count);
+      break;
+    end;
+  end;
+
+  if err_count = 0 then
+  begin
+    // 成功
+    inc(TestSuit.SuccessCount);
+    Result := True;
+    Exit;
+  end;
+
+  // ここから相違あり(テスト失敗)
+  inc(TestSuit.ErrorCount);
+  if msg <> '' then
+    TestSuit.LogMsg(msg);
+
+  len_limit := false;
+  if len_exp > 64 then
+  begin
+    len_exp := 64;
+    len_limit := True;
+  end;
+
+  exp_str := '';
+  act_str := '';
+  dif_str := '';
+  for var i := 0 to len_exp - 1 do
+  begin
+    exp_str := exp_str + IntToHex(exp[i], 2) + ' ';
+    act_str := act_str + IntToHex(act[i], 2) + ' ';
+    if exp[i] <> act[i] then
+      dif_str := dif_str + '|| '
+    else
+      dif_str := dif_str + '   ';
+  end;
+
+  if len_limit then
+  begin
+    exp_str := exp_str + '...';
+    act_str := act_str + '...';
+    dif_str := dif_str + '...';
+  end;
+
+  TestSuit.LogMsg(STR_ARR_EXP + exp_str);
+  TestSuit.LogMsg(STR_ARR_DIF + dif_str);
+  TestSuit.LogMsg(STR_ARR_ACT + act_str);
+
+  Result := false;
 end;
 
 function assertEquals(msg: string; exp, act: TDateTime): boolean;
