@@ -46,6 +46,7 @@ const
   STR_TAB = '    ';
 {$IFDEF IXUNITTEST_MSG_JP}
   STR_EXP = STR_TAB + '期待';
+  STR_DIF = STR_TAB + '差異';
   STR_ACT = STR_TAB + '実際';
   STR_DLT = STR_TAB + '許容';
   STR_ERR = STR_TAB + '誤差';
@@ -58,6 +59,7 @@ const
   STR_NG = 'NG!!Σ（￣□￣|||）';
 {$ELSE}
   STR_EXP = STR_TAB + 'EXP';
+  STR_DIF = STR_TAB + 'DIF';
   STR_ACT = STR_TAB + 'ACT';
   STR_DLT = STR_TAB + 'DELTA';
   STR_ERR = STR_TAB + 'ERR';
@@ -69,6 +71,9 @@ const
   STR_OK = 'OK.';
   STR_NG = 'NG!! (-_-)';
 {$ENDIF}
+
+type
+  TIxUnitType = (utDEC, utHEX, utBIN);
 
 type
   TIxUnitTest = class(TObject)
@@ -98,10 +103,10 @@ type
 function assertEquals(msg: string; exp, act: boolean): boolean; overload;
 function assertEquals(msg: string; exp, act: string): boolean; overload;
 function assertEquals(msg: string; exp, act: Double; err_range: Double = 0): boolean; overload;
-function assertEquals(msg: string; exp, act: UInt32; hex: boolean = false): boolean; overload; // Longword
-function assertEquals(msg: string; exp, act: UInt16; hex: boolean = false): boolean; overload; // Word
-function assertEquals(msg: string; exp, act: Int32; hex: boolean = false): boolean; overload; // integer(32bit)
-function assertEquals(msg: string; exp, act: UInt64; hex: boolean = false): boolean; overload; // unsigned integer(64it)
+function assertEquals(msg: string; exp, act: UInt32; utype: TIxUnitType = utDEC): boolean; overload; // Longword
+function assertEquals(msg: string; exp, act: UInt16; utype: TIxUnitType = utDEC): boolean; overload; // Word
+function assertEquals(msg: string; exp, act: Int32; utype: TIxUnitType = utDEC): boolean; overload; // integer(32bit)
+function assertEquals(msg: string; exp, act: UInt64; utype: TIxUnitType = utDEC): boolean; overload; // unsigned integer(64it)
 function assertEquals(msg: string; exp, act: TDateTime): boolean; overload;
 function assertEquals(msg: string; exp, act: array of Byte): boolean; overload;
 function assertEquals(msg: string; exp, act: TStrings): boolean; overload;
@@ -116,6 +121,50 @@ var
   TestSuit: TIxUnitTest;
 
 implementation
+
+function int_to_bin(val: UInt64; num: integer): string;
+var
+  str: string;
+  bit: UInt64;
+begin
+  bit := 1;
+  for var i := 0 to num - 1 do
+  begin
+    if (val and bit) <> 0 then
+      str := '1' + str
+    else
+      str := '0' + str;
+
+    if ((i + 1) mod 4) = 0 then
+      str := '_' + str;
+
+    bit := bit shl 1;
+  end;
+
+  Result := str;
+end;
+
+function int_to_bindiff(exp, act: UInt64; num: integer): string;
+var
+  str: string;
+  bit: UInt64;
+begin
+  bit := 1;
+  for var i := 0 to num - 1 do
+  begin
+    if ((exp and bit) xor (act and bit)) <> 0 then
+      str := '|' + str
+    else
+      str := ' ' + str;
+
+    if ((i + 1) mod 4) = 0 then
+      str := ' ' + str;
+
+    bit := bit shl 1;
+  end;
+
+  Result := str;
+end;
 
 { IxUnitTest }
 
@@ -246,10 +295,11 @@ begin
   end;
 end;
 
-function assertEquals(msg: string; exp, act: UInt16; hex: boolean = false): boolean;
+function assertEquals(msg: string; exp, act: UInt16; utype: TIxUnitType = utDEC): boolean;
 var
   strexp: string;
   stract: string;
+  strdif: string;
 begin
   if exp = act then
   begin
@@ -262,18 +312,29 @@ begin
     if msg <> '' then
       TestSuit.LogMsg(msg);
 
-    if hex then
-    begin
-      strexp := '$' + IntToHex(exp, 4);
-      stract := '$' + IntToHex(act, 4);
-    end
-    else
-    begin
-      strexp := IntToStr(exp);
-      stract := IntToStr(act);
+    strdif := '';
+    case utype of
+      utDEC:
+        begin
+          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
+          stract := '$' + IntToHex(act, sizeof(exp) * 2);
+        end;
+      utHEX:
+        begin
+          strexp := IntToStr(exp);
+          stract := IntToStr(act);
+        end;
+      utBIN:
+        begin
+          strexp := '0b' + int_to_bin(exp, sizeof(exp) * 8);
+          strdif := '0b' + int_to_bindiff(exp, act, sizeof(exp) * 8);
+          stract := '0b' + int_to_bin(act, sizeof(exp) * 8);
+        end;
     end;
 
     TestSuit.LogMsg(STR_EXP + '(UInt16) = ' + strexp);
+    if strdif <> '' then
+      TestSuit.LogMsg(STR_DIF + '(UInt16) = ' + strdif);
     TestSuit.LogMsg(STR_ACT + '(UInt16) = ' + stract);
 {$IFDEF IXUNITTEST_ENABLE_ASSERT}
     Assert(false);
@@ -282,10 +343,11 @@ begin
   end;
 end;
 
-function assertEquals(msg: string; exp, act: UInt32; hex: boolean = false): boolean;
+function assertEquals(msg: string; exp, act: UInt32; utype: TIxUnitType = utDEC): boolean;
 var
   strexp: string;
   stract: string;
+  strdif: string;
 begin
   if exp = act then
   begin
@@ -298,18 +360,29 @@ begin
     if msg <> '' then
       TestSuit.LogMsg(msg);
 
-    if hex then
-    begin
-      strexp := '$' + IntToHex(exp, 8);
-      stract := '$' + IntToHex(act, 8);
-    end
-    else
-    begin
-      strexp := IntToStr(exp);
-      stract := IntToStr(act);
+    strdif := '';
+    case utype of
+      utDEC:
+        begin
+          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
+          stract := '$' + IntToHex(act, sizeof(exp) * 2);
+        end;
+      utHEX:
+        begin
+          strexp := IntToStr(exp);
+          stract := IntToStr(act);
+        end;
+      utBIN:
+        begin
+          strexp := '0b' + int_to_bin(exp, sizeof(exp) * 8);
+          strdif := '0b' + int_to_bindiff(exp, act, sizeof(exp) * 8);
+          stract := '0b' + int_to_bin(act, sizeof(exp) * 8);
+        end;
     end;
 
     TestSuit.LogMsg(STR_EXP + '(UInt32) = ' + strexp);
+    if strdif <> '' then
+      TestSuit.LogMsg(STR_DIF + '(UInt32) = ' + strdif);
     TestSuit.LogMsg(STR_ACT + '(UInt32) = ' + stract);
 {$IFDEF IXUNITTEST_ENABLE_ASSERT}
     Assert(false);
@@ -401,10 +474,11 @@ begin
   Result := false;
 end;
 
-function assertEquals(msg: string; exp, act: Int32; hex: boolean = false): boolean;
+function assertEquals(msg: string; exp, act: Int32; utype: TIxUnitType = utDEC): boolean;
 var
   strexp: string;
   stract: string;
+  strdif: string;
 begin
   if exp = act then
   begin
@@ -417,18 +491,29 @@ begin
     if msg <> '' then
       TestSuit.LogMsg(msg);
 
-    if hex then
-    begin
-      strexp := '$' + IntToHex(exp, 8);
-      stract := '$' + IntToHex(act, 8);
-    end
-    else
-    begin
-      strexp := IntToStr(exp);
-      stract := IntToStr(act);
+    strdif := '';
+    case utype of
+      utDEC:
+        begin
+          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
+          stract := '$' + IntToHex(act, sizeof(exp) * 2);
+        end;
+      utHEX:
+        begin
+          strexp := IntToStr(exp);
+          stract := IntToStr(act);
+        end;
+      utBIN:
+        begin
+          strexp := '0b' + int_to_bin(exp, sizeof(exp) * 8);
+          strdif := '0b' + int_to_bindiff(exp, act, sizeof(exp) * 8);
+          stract := '0b' + int_to_bin(act, sizeof(exp) * 8);
+        end;
     end;
 
     TestSuit.LogMsg(STR_EXP + '(Int32) = ' + strexp);
+    if strdif <> '' then
+      TestSuit.LogMsg(STR_DIF + '(Int32) = ' + strdif);
     TestSuit.LogMsg(STR_ACT + '(Int32) = ' + stract);
 {$IFDEF IXUNITTEST_ENABLE_ASSERT}
     Assert(false);
@@ -437,10 +522,11 @@ begin
   end;
 end;
 
-function assertEquals(msg: string; exp, act: UInt64; hex: boolean = false): boolean;
+function assertEquals(msg: string; exp, act: UInt64; utype: TIxUnitType = utDEC): boolean;
 var
   strexp: string;
   stract: string;
+  strdif: string;
 begin
   if exp = act then
   begin
@@ -453,18 +539,29 @@ begin
     if msg <> '' then
       TestSuit.LogMsg(msg);
 
-    if hex then
-    begin
-      strexp := '$' + IntToHex(exp, 8);
-      stract := '$' + IntToHex(act, 8);
-    end
-    else
-    begin
-      strexp := IntToStr(exp);
-      stract := IntToStr(act);
+    strdif := '';
+    case utype of
+      utDEC:
+        begin
+          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
+          stract := '$' + IntToHex(act, sizeof(exp) * 2);
+        end;
+      utHEX:
+        begin
+          strexp := IntToStr(exp);
+          stract := IntToStr(act);
+        end;
+      utBIN:
+        begin
+          strexp := '0b' + int_to_bin(exp, sizeof(exp) * 8);
+          strdif := '0b' + int_to_bindiff(exp, act, sizeof(exp) * 8);
+          stract := '0b' + int_to_bin(act, sizeof(exp) * 8);
+        end;
     end;
 
     TestSuit.LogMsg(STR_EXP + '(UInt64) = ' + strexp);
+    if strdif <> '' then
+      TestSuit.LogMsg(STR_DIF + '(UInt64) = ' + strdif);
     TestSuit.LogMsg(STR_ACT + '(UInt64) = ' + stract);
 {$IFDEF IXUNITTEST_ENABLE_ASSERT}
     Assert(false);
