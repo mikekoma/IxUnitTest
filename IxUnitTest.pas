@@ -319,13 +319,13 @@ begin
     case utype of
       utDEC:
         begin
-          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
-          stract := '$' + IntToHex(act, sizeof(exp) * 2);
+          strexp := IntToStr(exp);
+          stract := IntToStr(act);
         end;
       utHEX:
         begin
-          strexp := IntToStr(exp);
-          stract := IntToStr(act);
+          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
+          stract := '$' + IntToHex(act, sizeof(exp) * 2);
         end;
       utBIN:
         begin
@@ -367,13 +367,13 @@ begin
     case utype of
       utDEC:
         begin
-          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
-          stract := '$' + IntToHex(act, sizeof(exp) * 2);
+          strexp := IntToStr(exp);
+          stract := IntToStr(act);
         end;
       utHEX:
         begin
-          strexp := IntToStr(exp);
-          stract := IntToStr(act);
+          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
+          stract := '$' + IntToHex(act, sizeof(exp) * 2);
         end;
       utBIN:
         begin
@@ -415,13 +415,13 @@ begin
     case utype of
       utDEC:
         begin
-          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
-          stract := '$' + IntToHex(act, sizeof(exp) * 2);
+          strexp := IntToStr(exp);
+          stract := IntToStr(act);
         end;
       utHEX:
         begin
-          strexp := IntToStr(exp);
-          stract := IntToStr(act);
+          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
+          stract := '$' + IntToHex(act, sizeof(exp) * 2);
         end;
       utBIN:
         begin
@@ -463,13 +463,13 @@ begin
     case utype of
       utDEC:
         begin
-          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
-          stract := '$' + IntToHex(act, sizeof(exp) * 2);
+          strexp := IntToStr(exp);
+          stract := IntToStr(act);
         end;
       utHEX:
         begin
-          strexp := IntToStr(exp);
-          stract := IntToStr(act);
+          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
+          stract := '$' + IntToHex(act, sizeof(exp) * 2);
         end;
       utBIN:
         begin
@@ -620,19 +620,18 @@ begin
   begin
     if exp[i] <> act[i] then
     begin
+      inc(TestSuit.ErrorCount);
       if msg <> '' then
         TestSuit.LogMsg(msg);
 
       TestSuit.LogMsg(STR_EXP + '(TStrings[' + i.ToString + ']) = ' + exp[i]);
       TestSuit.LogMsg(STR_ACT + '(TStrings[' + i.ToString + ']) = ' + act[i]);
 
-      inc(TestSuit.ErrorCount);
       Result := false;
       Exit;
     end;
   end;
 
-  inc(TestSuit.SuccessCount);
   Result := True;
 end;
 
