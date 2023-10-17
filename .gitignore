@@ -24,6 +24,7 @@
 *.identcache
 *.dcu
 __history
+__recovery
 
 # ---- WinAVR ----
 default/*.o
