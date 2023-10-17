@@ -1,6 +1,10 @@
 ﻿{
   IxUnitTest
 
+  ■2023-10-13 Ver1.06
+  Uint8の比較追加
+  整数の比較結果出力、10進数と16進数が逆だったのを修正
+
   ■2023-08-11 Ver1.05
   バイナリ比較を追加
 
@@ -106,6 +110,7 @@ type
 function assertEquals(msg: string; exp, act: boolean): boolean; overload;
 function assertEquals(msg: string; exp, act: string): boolean; overload;
 function assertEquals(msg: string; exp, act: Double; err_range: Double = 0): boolean; overload;
+function assertEquals(msg: string; exp, act: UInt8; utype: TIxUnitType = utDEC): boolean; overload; // Word
 function assertEquals(msg: string; exp, act: UInt16; utype: TIxUnitType = utDEC): boolean; overload; // Word
 function assertEquals(msg: string; exp, act: UInt32; utype: TIxUnitType = utDEC): boolean; overload; // Longword
 function assertEquals(msg: string; exp, act: Int32; utype: TIxUnitType = utDEC): boolean; overload; // integer(32bit)
@@ -291,6 +296,54 @@ begin
     TestSuit.LogMsg(STR_ACT + '(Double) = ' + FloatToStr(act));
     TestSuit.LogMsg(STR_DLT + '(Double) = ' + FloatToStr(err_range));
     TestSuit.LogMsg(STR_ERR + '(Double) = ' + FloatToStr(calc_err));
+{$IFDEF IXUNITTEST_ENABLE_ASSERT}
+    Assert(false);
+{$ENDIF}
+    Result := false;
+  end;
+end;
+
+function assertEquals(msg: string; exp, act: UInt8; utype: TIxUnitType = utDEC): boolean;
+var
+  strexp: string;
+  stract: string;
+  strdif: string;
+begin
+  if exp = act then
+  begin
+    inc(TestSuit.SuccessCount);
+    Result := True;
+  end
+  else
+  begin
+    inc(TestSuit.ErrorCount);
+    if msg <> '' then
+      TestSuit.LogMsg(msg);
+
+    strdif := '';
+    case utype of
+      utDEC:
+        begin
+          strexp := IntToStr(exp);
+          stract := IntToStr(act);
+        end;
+      utHEX:
+        begin
+          strexp := '$' + IntToHex(exp, sizeof(exp) * 2);
+          stract := '$' + IntToHex(act, sizeof(exp) * 2);
+        end;
+      utBIN:
+        begin
+          strexp := '0b' + int_to_bin(exp, sizeof(exp) * 8);
+          strdif := '0b' + int_to_bindiff(exp, act, sizeof(exp) * 8);
+          stract := '0b' + int_to_bin(act, sizeof(exp) * 8);
+        end;
+    end;
+
+    TestSuit.LogMsg(STR_EXP + '(UInt8) = ' + strexp);
+    if strdif <> '' then
+      TestSuit.LogMsg(STR_DIF + '(UInt8) = ' + strdif);
+    TestSuit.LogMsg(STR_ACT + '(UInt8) = ' + stract);
 {$IFDEF IXUNITTEST_ENABLE_ASSERT}
     Assert(false);
 {$ENDIF}
